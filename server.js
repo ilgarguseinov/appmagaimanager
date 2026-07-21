@@ -10,21 +10,48 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
+const SHOP = process.env.SHOPIFY_SHOP;
+const CLIENT_ID = process.env.SHOPIFY_API_KEY;
+const CLIENT_SECRET = process.env.SHOPIFY_API_SECRET;
+
+async function getAccessToken() {
+const params = new URLSearchParams();
+
+params.append("grant_type", "client_credentials");
+params.append("client_id", CLIENT_ID);
+params.append("client_secret", CLIENT_SECRET);
+
+const response = await axios.post(
+"https://" + SHOP + "/admin/oauth/access_token",
+params.toString(),
+{
+headers: {
+"Content-Type": "application/x-www-form-urlencoded"
+}
+}
+);
+
+return response.data.access_token;
+}
+
 app.get("/", (req, res) => {
-res.json({ status: "ok", message: "AppMag AI Manager is running" });
+res.json({
+status: "ok",
+message: "AppMag AI Manager is running"
+});
 });
 
 app.get("/health", (req, res) => {
-res.json({ status: "healthy" });
+res.json({
+status: "healthy"
+});
 });
 
 app.get("/api/products", async (req, res) => {
 try {
-const shop = process.env.SHOPIFY_SHOP;
-const accessToken = process.env.SHOPIFY_API_SECRET;
-
+const accessToken = await getAccessToken();
 const response = await axios.get(
-"https://" + shop + "/admin/api/2026-07/products.json",
+"https://" + SHOP + "/admin/api/2026-07/products.json",
 {
 headers: {
 "X-Shopify-Access-Token": accessToken,
@@ -34,9 +61,8 @@ headers: {
 );
 
 res.json(response.data);
-
 } catch (error) {
-res.status(500).json({
+res.status(error.response?.status || 500).json({
 error: "Failed to get Shopify products",
 details: error.response?.data || error.message
 });
