@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const SHOP = process.env.SHOPIFY_SHOP;
 const CLIENT_ID = process.env.SHOPIFY_API_KEY;
 const CLIENT_SECRET = process.env.SHOPIFY_API_SECRET;
-
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 async function getAccessToken() {
 const params = new URLSearchParams();
 
@@ -215,9 +215,17 @@ app.get("/products", async (req, res) => {
             <p><strong>Stok:</strong> ${stock}</p>
             <p><strong>Status:</strong> ${product.status || "—"}</p>
 
-            <button class="ai-button">
-              AI Analiz
-            </button>
+           <button
+  class="ai-button"
+  onclick='analyzeProduct(${JSON.stringify({
+    title: product.title,
+    description: product.body_html,
+    price: price,
+    stock: stock
+  }).replace(/'/g, "&apos;")})'
+>
+  AI Analiz
+</button>
           </div>
 
         </div>
@@ -236,6 +244,7 @@ app.get("/products", async (req, res) => {
 <title>Məhsullar - AppMag AI Manager</title>
 
 <style>
+
 
 body {
   font-family: Arial, sans-serif;
@@ -352,8 +361,38 @@ body {
 
 </div>
 
-</body>
+<script>
+async function analyzeProduct(product) {
+  try {
+    alert("AI analiz başlayır. Bir neçə saniyə gözləyin...");
 
+    const response = await fetch("/api/ai-analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(product)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      alert(
+        "AI analiz xətası:\n" +
+        JSON.stringify(data, null, 2)
+      );
+      return;
+    }
+
+    alert(data.analysis);
+
+  } catch (error) {
+    alert("Xəta: " + error.message);
+  }
+}
+</script>
+
+</body>
 </html>
     `);
 
@@ -367,6 +406,78 @@ ${JSON.stringify(error.response?.data || error.message, null, 2)}
       </pre>
     `);
 
+  }
+});
+app.post("/api/ai-analyze", async (req, res) => {
+  try {
+    const { title, description, price, stock } = req.body;
+
+    if (!OPENAI_API_KEY) {
+      return res.status(500).json({
+        error: "OPENAI_API_KEY tapılmadı"
+      });
+    }
+
+    const prompt = `
+Sən e-commerce və Shopify üzrə peşəkar AI analitiksən.
+
+Aşağıdakı məhsulu analiz et:
+
+Məhsul adı: ${title || "Yoxdur"}
+Təsvir: ${description || "Yoxdur"}
+Qiymət: ${price || "Yoxdur"}
+Stok: ${stock ?? "Yoxdur"}
+
+Azərbaycan dilində cavab ver.
+
+Bu strukturda analiz et:
+
+1. Məhsul adının analizi
+2. SEO problemləri
+3. Daha yaxşı məhsul adı təklifi
+4. Satış üçün daha güclü məhsul təsviri
+5. Əsas açar sözlər
+6. Satış potensialı: 1-10 bal
+7. Konkret inkişaf tövsiyələri
+`;
+
+    const aiResponse = await axios.post(
+      "https://api.openai.com/v1/responses",
+      {
+        model: "gpt-5.6",
+        reasoning: {
+          effort: "low"
+        },
+        input: prompt
+      },
+      {
+        headers: {
+          "Authorization": "Bearer " + OPENAI_API_KEY,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const outputText =
+      aiResponse.data.output_text ||
+      aiResponse.data.output
+        ?.flatMap(item => item.content || [])
+        ?.filter(item => item.type === "output_text")
+        ?.map(item => item.text)
+        ?.join("\n") ||
+      "AI cavabı alınmadı";
+
+    res.json({
+      success: true,
+      analysis: outputText
+    });
+
+  } catch (error) {
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: "AI analiz zamanı xəta baş verdi",
+      details: error.response?.data || error.message
+    });
   }
 });
 app.listen(PORT, () => {
