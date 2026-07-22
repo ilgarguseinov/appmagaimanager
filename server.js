@@ -384,7 +384,7 @@ async function analyzeProduct(button) {
 
     if (!response.ok || !data.success) {
       alert(
-        "AI analiz xətası:\n" +
+        "AI analiz xətası:\\n" +
         JSON.stringify(data, null, 2)
       );
       return;
