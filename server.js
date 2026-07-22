@@ -215,14 +215,13 @@ app.get("/products", async (req, res) => {
             <p><strong>Stok:</strong> ${stock}</p>
             <p><strong>Status:</strong> ${product.status || "—"}</p>
 
-           <button
+          <button
   class="ai-button"
-  onclick='analyzeProduct(${JSON.stringify({
-    title: product.title,
-    description: product.body_html,
-    price: price,
-    stock: stock
-  }).replace(/'/g, "&apos;")})'
+  data-title="${encodeURIComponent(product.title || "")}"
+  data-description="${encodeURIComponent(product.body_html || "")}"
+  data-price="${encodeURIComponent(price || "")}"
+  data-stock="${encodeURIComponent(String(stock ?? ""))}"
+  onclick="analyzeProduct(this)"
 >
   AI Analiz
 </button>
@@ -362,7 +361,14 @@ body {
 </div>
 
 <script>
-async function analyzeProduct(product) {
+async function analyzeProduct(button) {
+  const product = {
+    title: decodeURIComponent(button.dataset.title || ""),
+    description: decodeURIComponent(button.dataset.description || ""),
+    price: decodeURIComponent(button.dataset.price || ""),
+    stock: decodeURIComponent(button.dataset.stock || "")
+  };
+
   try {
     alert("AI analiz başlayır. Bir neçə saniyə gözləyin...");
 
