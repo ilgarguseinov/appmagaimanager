@@ -3,10 +3,13 @@ const axios = require("axios");
 const cors = require("cors");
 require("dotenv").config();
 
+const youtubeRouter = require("./youtube/router");
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/youtube", youtubeRouter);
 
 const PORT = process.env.PORT || 3000;
 
@@ -224,6 +227,16 @@ app.get("/", (req, res) => {
         </p>
         <a class="button" href="/campaigns">
           Kampaniyaları aç
+        </a>
+      </div>
+
+      <div class="card">
+        <h2>YouTube Avtomatlaşdırma</h2>
+        <p>
+          n8n stilində 5 AI agenti ilə YouTube kanalını avtomatlaşdır.
+        </p>
+        <a class="button" href="/youtube">
+          Agentləri aç
         </a>
       </div>
 
