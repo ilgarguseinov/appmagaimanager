@@ -154,6 +154,16 @@ app.get("/", (req, res) => {
         </a>
       </div>
 
+      <div class="card">
+        <h2>Mağaza statistikası</h2>
+        <p>
+          Məhsul, sifariş və müştəri sayı kimi əsas göstəricilər.
+        </p>
+        <a class="button" href="/statistics">
+          Statistikanı aç
+        </a>
+      </div>
+
     </div>
   </div>
 </body>
@@ -414,6 +424,242 @@ ${JSON.stringify(error.response?.data || error.message, null, 2)}
 
   }
 });
+app.get("/statistics", async (req, res) => {
+  try {
+    const accessToken = await getAccessToken();
+
+    const headers = {
+      "X-Shopify-Access-Token": accessToken,
+      "Content-Type": "application/json"
+    };
+
+    const apiBase = "https://" + SHOP + "/admin/api/2026-07";
+
+    const [shopResult, productsResult, ordersResult, customersResult] =
+      await Promise.allSettled([
+        axios.get(apiBase + "/shop.json", { headers }),
+        axios.get(apiBase + "/products/count.json", { headers }),
+        axios.get(apiBase + "/orders/count.json?status=any", { headers }),
+        axios.get(apiBase + "/customers/count.json", { headers })
+      ]);
+
+    const shop =
+      shopResult.status === "fulfilled" ? shopResult.value.data.shop : null;
+
+    const productCount =
+      productsResult.status === "fulfilled"
+        ? productsResult.value.data.count
+        : "—";
+
+    const orderCount =
+      ordersResult.status === "fulfilled"
+        ? ordersResult.value.data.count
+        : "—";
+
+    const customerCount =
+      customersResult.status === "fulfilled"
+        ? customersResult.value.data.count
+        : "—";
+
+    res.send(`
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Statistika - AppMag AI Manager</title>
+
+<style>
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f6f6f7;
+  margin: 0;
+  padding: 40px;
+  color: #202223;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.back {
+  text-decoration: none;
+  color: #008060;
+  font-weight: bold;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.stat-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 15px;
+  color: #6d7175;
+  font-weight: normal;
+}
+
+.stat-card .value {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.shop-info {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.shop-info h2 {
+  margin-top: 0;
+}
+
+.shop-info table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shop-info td {
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.shop-info td:first-child {
+  color: #6d7175;
+  width: 200px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+
+    <div>
+      <h1>Mağaza statistikası</h1>
+      <p>Shopify mağazanızın əsas göstəriciləri</p>
+    </div>
+
+    <a class="back" href="/">
+      ← Dashboard
+    </a>
+
+  </div>
+
+  <div class="grid">
+
+    <div class="stat-card">
+      <h3>Məhsul sayı</h3>
+      <div class="value">${productCount}</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Sifariş sayı</h3>
+      <div class="value">${orderCount}</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Müştəri sayı</h3>
+      <div class="value">${customerCount}</div>
+    </div>
+
+  </div>
+
+  <br>
+
+  ${
+    shop
+      ? `
+  <div class="shop-info">
+    <h2>Mağaza məlumatı</h2>
+    <table>
+      <tr>
+        <td>Ad</td>
+        <td>${shop.name || "—"}</td>
+      </tr>
+      <tr>
+        <td>Domen</td>
+        <td>${shop.domain || "—"}</td>
+      </tr>
+      <tr>
+        <td>Valyuta</td>
+        <td>${shop.currency || "—"}</td>
+      </tr>
+      <tr>
+        <td>Plan</td>
+        <td>${shop.plan_name || "—"}</td>
+      </tr>
+      <tr>
+        <td>Ölkə</td>
+        <td>${shop.country_name || "—"}</td>
+      </tr>
+      <tr>
+        <td>Vaxt zonası</td>
+        <td>${shop.iana_timezone || "—"}</td>
+      </tr>
+    </table>
+  </div>
+  `
+      : `
+  <div class="shop-info">
+    <h2>Mağaza məlumatı</h2>
+    <p>Mağaza məlumatı yüklənə bilmədi.</p>
+  </div>
+  `
+  }
+
+</div>
+
+</body>
+</html>
+    `);
+
+  } catch (error) {
+
+    res.status(error.response?.status || 500).send(`
+      <h2>Statistika yüklənmədi</h2>
+
+      <pre>
+${JSON.stringify(error.response?.data || error.message, null, 2)}
+      </pre>
+    `);
+
+  }
+});
+
 app.post("/api/ai-analyze", async (req, res) => {
   try {
     const { title, description, price, stock } = req.body;
