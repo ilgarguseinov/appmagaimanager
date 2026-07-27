@@ -5,6 +5,7 @@ const { writeScript } = require("./agents/scriptWriter");
 const { generateContent } = require("./agents/contentGenerator");
 const { publish } = require("./agents/publisher");
 const { runPipeline } = require("./pipeline");
+const { runDemoPipeline } = require("./demoPipeline");
 
 const router = express.Router();
 
@@ -51,22 +52,24 @@ router.get("/", (req, res) => {
       <div class="node"><h3>5. Ən Yaxşı Vaxt / Yükləmə</h3><p>Tarixi məlumata görə ən yaxşı vaxt hesablanır, video faylı verilibsə planlaşdırılmış yüklənir</p></div>
     </div>
 
-    <button class="button" id="runBtn" onclick="runPipeline()">Pipeline-i işə sal</button>
+    <button class="button" id="runBtn" onclick="runPipeline('/youtube/api/run', 'runBtn')">Pipeline-i işə sal</button>
+    <button class="button" id="demoBtn" style="background:#6d7175" onclick="runPipeline('/youtube/api/run-demo', 'demoBtn')">Demo rejimində göstər (API açarı lazım deyil)</button>
 
     <div id="result"></div>
   </div>
 
 <script>
-async function runPipeline() {
-  const btn = document.getElementById("runBtn");
+async function runPipeline(endpoint, btnId) {
+  const btn = document.getElementById(btnId);
   const resultDiv = document.getElementById("result");
+  const originalText = btn.textContent;
 
   btn.disabled = true;
   btn.textContent = "İşləyir...";
   resultDiv.innerHTML = "";
 
   try {
-    const response = await fetch("/youtube/api/run", {
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({})
@@ -79,7 +82,7 @@ async function runPipeline() {
     resultDiv.innerHTML = "<p>Xəta: " + error.message + "</p>";
   } finally {
     btn.disabled = false;
-    btn.textContent = "Pipeline-i işə sal";
+    btn.textContent = originalText;
   }
 }
 </script>
@@ -141,6 +144,11 @@ router.post("/api/run", async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
+});
+
+router.post("/api/run-demo", async (req, res) => {
+  const data = await runDemoPipeline(req.body || {});
+  res.json({ success: true, data });
 });
 
 module.exports = router;
