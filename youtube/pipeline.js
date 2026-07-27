@@ -22,7 +22,12 @@ async function runPipeline({ channelId, videoFilePath } = {}) {
   const content = await generateContent(script);
   trace.push({
     node: "4. Kontent Generasiya Agenti",
-    output: { scenes: content.scenes, thumbnailPrompt: content.thumbnailPrompt, hasThumbnail: Boolean(content.thumbnailBase64) }
+    output: {
+      scenes: content.scenes.map(({ audioBase64, ...scene }) => scene),
+      thumbnailPrompt: content.thumbnailPrompt,
+      hasThumbnail: Boolean(content.thumbnailBase64),
+      hasVoiceover: content.scenes.every((scene) => Boolean(scene.audioBase64))
+    }
   });
 
   const publishResult = await publish({ videos: channelData.videos, script, videoFilePath });

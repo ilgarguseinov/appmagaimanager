@@ -1,5 +1,6 @@
 const axios = require("axios");
 const { extractOutputText, extractJson } = require("../openaiText");
+const { generateFreeThumbnail, generateFreeVoiceover } = require("../freeMedia");
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -44,25 +45,18 @@ Cavabı YALNIZ bu JSON formatında qaytar (başqa mətn əlavə etmə):
 
   const contentPlan = extractJson(extractOutputText(data));
 
-  const imageResponse = await axios.post(
-    "https://api.openai.com/v1/images/generations",
-    {
-      model: "gpt-image-1",
-      prompt: contentPlan.thumbnailPrompt,
-      size: "1792x1024"
-    },
-    {
-      headers: {
-        Authorization: "Bearer " + OPENAI_API_KEY,
-        "Content-Type": "application/json"
-      }
-    }
+  const thumbnailBase64 = await generateFreeThumbnail(contentPlan.thumbnailPrompt);
+
+  const scenes = await Promise.all(
+    contentPlan.scenes.map(async (scene) => ({
+      ...scene,
+      audioBase64: await generateFreeVoiceover(scene.voiceover),
+      audioFormat: "mp3"
+    }))
   );
 
-  const thumbnailBase64 = imageResponse.data.data?.[0]?.b64_json || null;
-
   return {
-    scenes: contentPlan.scenes,
+    scenes,
     thumbnailPrompt: contentPlan.thumbnailPrompt,
     thumbnailBase64
   };
