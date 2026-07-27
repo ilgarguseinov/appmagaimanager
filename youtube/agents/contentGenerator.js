@@ -22,10 +22,12 @@ Cavabı YALNIZ bu JSON formatında qaytar (başqa mətn əlavə etmə):
 
 {
   "scenes": [
-    { "sceneNumber": 1, "visual": "ekranda nə göstərilsin", "voiceover": "səsləndirmə mətni", "durationSeconds": 8 }
+    { "sceneNumber": 1, "visual": "ekranda nə göstərilsin", "voiceover": "səsləndirmə mətni (İNGİLİS dilində)", "durationSeconds": 8 }
   ],
   "thumbnailPrompt": "thumbnail üçün görüntü generasiya promptu (ingiliscə, detallı)"
 }
+
+"voiceover" sahəsini MÜTLƏQ İNGİLİS dilində yaz, digər sahələr Azərbaycan dilində qala bilər.
 `;
 
   const { data } = await axios.post(
