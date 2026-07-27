@@ -14,6 +14,59 @@ const SHOP = process.env.SHOPIFY_SHOP;
 const CLIENT_ID = process.env.SHOPIFY_API_KEY;
 const CLIENT_SECRET = process.env.SHOPIFY_API_SECRET;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+const campaigns = [];
+let nextCampaignId = 1;
+
+async function generateAdCopy({ name, product, platform, audience, budget, notes }) {
+  const prompt = `
+Sən peşəkar reklam mətni (copywriting) üzrə AI mütəxəssissən.
+
+Aşağıdakı reklam kampaniyası üçün qısa və effektiv reklam mətni hazırla:
+
+Kampaniya adı: ${name || "Yoxdur"}
+Platforma: ${platform || "Yoxdur"}
+Məhsul/Xidmət: ${product || "Yoxdur"}
+Hədəf auditoriya: ${audience || "Yoxdur"}
+Büdcə: ${budget || "Yoxdur"}
+Əlavə qeydlər: ${notes || "Yoxdur"}
+
+Azərbaycan dilində cavab ver. Bu strukturda hazırla:
+
+1. Diqqətçəkən başlıq (2-3 variant)
+2. Qısa reklam mətni (1-2 cümlə)
+3. Çağırış (call to action)
+4. Tövsiyə olunan açar sözlər/hashtag-lər
+`;
+
+  const aiResponse = await axios.post(
+    "https://api.openai.com/v1/responses",
+    {
+      model: "gpt-5.6",
+      reasoning: {
+        effort: "low"
+      },
+      input: prompt
+    },
+    {
+      headers: {
+        "Authorization": "Bearer " + OPENAI_API_KEY,
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  return (
+    aiResponse.data.output_text ||
+    aiResponse.data.output
+      ?.flatMap(item => item.content || [])
+      ?.filter(item => item.type === "output_text")
+      ?.map(item => item.text)
+      ?.join("\n") ||
+    "AI cavabı alınmadı"
+  );
+}
+
 async function getAccessToken() {
 const params = new URLSearchParams();
 
@@ -161,6 +214,16 @@ app.get("/", (req, res) => {
         </p>
         <a class="button" href="/statistics">
           Statistikanı aç
+        </a>
+      </div>
+
+      <div class="card">
+        <h2>Reklam Kampaniyaları</h2>
+        <p>
+          Yeni reklam kampaniyası yarat və AI ilə reklam mətni əldə et.
+        </p>
+        <a class="button" href="/campaigns">
+          Kampaniyaları aç
         </a>
       </div>
 
@@ -658,6 +721,380 @@ ${JSON.stringify(error.response?.data || error.message, null, 2)}
     `);
 
   }
+});
+
+app.get("/campaigns", (req, res) => {
+  const campaignCards = campaigns
+    .slice()
+    .reverse()
+    .map((campaign) => `
+      <div class="campaign-card">
+        <div class="campaign-head">
+          <h3>${campaign.name}</h3>
+          <span class="platform-badge">${campaign.platform}</span>
+        </div>
+        <p><strong>Məhsul/Xidmət:</strong> ${campaign.product || "—"}</p>
+        <p><strong>Hədəf auditoriya:</strong> ${campaign.audience || "—"}</p>
+        <p><strong>Büdcə:</strong> ${campaign.budget || "—"}</p>
+        ${
+          campaign.notes
+            ? `<p><strong>Qeydlər:</strong> ${campaign.notes}</p>`
+            : ""
+        }
+        ${
+          campaign.adCopy
+            ? `<div class="ad-copy"><strong>AI reklam mətni:</strong><pre>${campaign.adCopy}</pre></div>`
+            : ""
+        }
+        <p class="created-at">Yaradıldı: ${new Date(campaign.createdAt).toLocaleString("az-AZ")}</p>
+      </div>
+    `)
+    .join("") || `<p class="empty-state">Hələ heç bir kampaniya yaradılmayıb.</p>`;
+
+  res.send(`
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Reklam Kampaniyaları - AppMag AI Manager</title>
+
+<style>
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f6f6f7;
+  margin: 0;
+  padding: 40px;
+  color: #202223;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.back {
+  text-decoration: none;
+  color: #008060;
+  font-weight: bold;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.form-card, .campaign-card, .empty-state {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.form-card h2 {
+  margin-top: 0;
+}
+
+.form-card label {
+  display: block;
+  font-weight: bold;
+  margin-top: 14px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.form-card input,
+.form-card select,
+.form-card textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-card textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
+.submit-button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px 18px;
+  background: #008060;
+  color: white;
+  text-decoration: none;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.campaigns-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campaign-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.campaign-head h3 {
+  margin: 0;
+}
+
+.platform-badge {
+  background: #e3f1df;
+  color: #1a7f37;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.ad-copy {
+  margin-top: 12px;
+  background: #f6f6f7;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.ad-copy pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+  margin: 8px 0 0 0;
+}
+
+.created-at {
+  color: #6d7175;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+
+.empty-state {
+  color: #6d7175;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+
+    <div>
+      <h1>Reklam Kampaniyaları</h1>
+      <p>Yeni reklam kampaniyası yarat və istəsən AI ilə reklam mətni yaratdır</p>
+    </div>
+
+    <a class="back" href="/">
+      ← Dashboard
+    </a>
+
+  </div>
+
+  <div class="layout">
+
+    <div class="form-card">
+      <h2>Yeni kampaniya</h2>
+
+      <form id="campaign-form">
+
+        <label for="name">Kampaniya adı</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="platform">Platforma</label>
+        <select id="platform" name="platform">
+          <option value="Meta (Facebook/Instagram)">Meta (Facebook/Instagram)</option>
+          <option value="Google Ads">Google Ads</option>
+          <option value="TikTok">TikTok</option>
+          <option value="Digər">Digər</option>
+        </select>
+
+        <label for="product">Məhsul/Xidmət</label>
+        <input type="text" id="product" name="product">
+
+        <label for="audience">Hədəf auditoriya</label>
+        <input type="text" id="audience" name="audience" placeholder="Məs: 18-35 yaş, qadınlar, Bakı">
+
+        <label for="budget">Büdcə (AZN)</label>
+        <input type="text" id="budget" name="budget">
+
+        <label for="notes">Əlavə qeydlər</label>
+        <textarea id="notes" name="notes"></textarea>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="generateAI" name="generateAI" checked>
+          <label for="generateAI" style="margin:0;">AI ilə reklam mətni yarat</label>
+        </div>
+
+        <button type="submit" class="submit-button" id="submit-button">
+          Kampaniya yarat
+        </button>
+
+      </form>
+    </div>
+
+    <div class="campaigns-list">
+      ${campaignCards}
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+document.getElementById("campaign-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const submitButton = document.getElementById("submit-button");
+  const form = e.target;
+
+  const payload = {
+    name: form.name.value,
+    platform: form.platform.value,
+    product: form.product.value,
+    audience: form.audience.value,
+    budget: form.budget.value,
+    notes: form.notes.value,
+    generateAI: form.generateAI.checked
+  };
+
+  submitButton.disabled = true;
+  submitButton.textContent = payload.generateAI
+    ? "Yaradılır (AI reklam mətni hazırlanır)..."
+    : "Yaradılır...";
+
+  try {
+    const response = await fetch("/api/campaigns", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      alert("Kampaniya yaradıla bilmədi:\\n" + JSON.stringify(data, null, 2));
+      submitButton.disabled = false;
+      submitButton.textContent = "Kampaniya yarat";
+      return;
+    }
+
+    window.location.reload();
+
+  } catch (error) {
+    alert("Xəta: " + error.message);
+    submitButton.disabled = false;
+    submitButton.textContent = "Kampaniya yarat";
+  }
+});
+</script>
+
+</body>
+</html>
+  `);
+});
+
+app.post("/api/campaigns", async (req, res) => {
+  try {
+    const { name, platform, product, audience, budget, notes, generateAI } = req.body;
+
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        error: "Kampaniya adı tələb olunur"
+      });
+    }
+
+    const campaign = {
+      id: nextCampaignId++,
+      name,
+      platform: platform || "Digər",
+      product: product || "",
+      audience: audience || "",
+      budget: budget || "",
+      notes: notes || "",
+      adCopy: null,
+      createdAt: new Date().toISOString()
+    };
+
+    if (generateAI) {
+      if (!OPENAI_API_KEY) {
+        return res.status(500).json({
+          success: false,
+          error: "OPENAI_API_KEY tapılmadı"
+        });
+      }
+
+      campaign.adCopy = await generateAdCopy(campaign);
+    }
+
+    campaigns.push(campaign);
+
+    res.json({
+      success: true,
+      campaign
+    });
+
+  } catch (error) {
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: "Kampaniya yaradılarkən xəta baş verdi",
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+app.get("/api/campaigns", (req, res) => {
+  res.json({
+    success: true,
+    campaigns
+  });
 });
 
 app.post("/api/ai-analyze", async (req, res) => {
