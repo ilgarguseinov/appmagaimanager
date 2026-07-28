@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spaceflight Simulator — Официальный фан-сайт</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --accent: #60a5fa;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --bg-dark: #030712;
+    --bg-card: rgba(15, 23, 42, 0.6);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+  .font-display { font-family: 'Orbitron', sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Stars background */
+  .stars-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: radial-gradient(ellipse at top, #0f172a 0%, #020617 50%, #000 100%);
+  }
+  .stars-bg::before,
+  .stars-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, white, transparent),
+      radial-gradient(1px 1px at 60% 70%, white, transparent),
+      radial-gradient(1px 1px at 50% 50%, white, transparent),
+      radial-gradient(2px 2px at 80% 10%, white, transparent),
+      radial-gradient(1px 1px at 90% 60%, white, transparent),
+      radial-gradient(1px 1px at 33% 80%, white, transparent),
+      radial-gradient(1px 1px at 15% 90%, white, transparent);
+    background-size: 200% 200%;
+    background-repeat: repeat;
+    animation: twinkle 8s linear infinite;
+  }
+  .stars-bg::after {
+    background-size: 300% 300%;
+    animation-duration: 12s;
+    opacity: 0.5;
+  }
+  @keyframes twinkle {
+    from { transform: translate(0, 0); }
+    to { transform: translate(-200%, -200%); }
+  }
+
+  /* Nebula glow */
+  .nebula {
+    position: fixed;
+    z-index: -1;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .nebula-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: radial-gradient(circle, #4f46e5, transparent); }
+  .nebula-2 { top: 40%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, #7c3aed, transparent); }
+  .nebula-3 { bottom: -10%; left: 30%; width: 700px; height: 700px; background: radial-gradient(circle, #0891b2, transparent); }
+
+  /* Nav */
+  .nav-blur {
+    backdrop-filter: blur(20px);
+    background: rgba(3, 7, 18, 0.7);
+    border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+  }
+  .nav-link {
+    position: relative;
+    transition: color 0.3s;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.3s;
+  }
+  .nav-link:hover::after { width: 100%; }
+  .nav-link:hover { color: var(--accent); }
+
+  /* Hero */
+  .hero-gradient {
+    background: linear-gradient(180deg, transparent 0%, rgba(3,7,18,0.3) 50%, var(--bg-dark) 100%);
+  }
+  .hero-title {
+    background: linear-gradient(135deg, #fff 0%, #60a5fa 50%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 80px rgba(96, 165, 250, 0.3);
+  }
+  .glow-btn {
+    position: relative;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    transition: all 0.3s;
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+  }
+  .glow-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(59, 130, 246, 0.7);
+  }
+  .outline-btn {
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+  }
+  .outline-btn:hover {
+    border-color: var(--accent);
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+  }
+
+  /* Cards */
+  .feature-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(96, 165, 250, 0.1);
+    transition: all 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  .feature-card:hover::before { transform: translateX(100%); }
+  .feature-card:hover {
+    border-color: rgba(96, 165, 250, 0.4);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2);
+  }
+
+  .part-card {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.5));
+    border: 1px solid rgba(96, 165, 250, 0.15);
+    transition: all 0.4s;
+  }
+  .part-card:hover {
+    border-color: var(--accent);
+    transform: scale(1.03);
+  }
+
+  /* Gallery */
+  .gallery-img {
+    transition: all 0.5s;
+    border: 1px solid rgba(96, 165, 250, 0.1);
+  }
+  .gallery-img:hover {
+    transform: scale(1.05);
+    border-color: var(--accent);
+    box-shadow: 0 0 40px rgba(96, 165, 250, 0.3);
+  }
+
+  /* Stats */
+  .stat-num {
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* FAQ */
+  .faq-item {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(96, 165, 250, 0.1);
+    transition: all 0.3s;
+  }
+  .faq-item.open {
+    border-color: rgba(96, 165, 250, 0.4);
+  }
+  .faq-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+
+  /* Ticker */
+  @keyframes scroll-x {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .ticker {
+    animation: scroll-x 30s linear infinite;
+  }
+
+  /* Rocket float */
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-20px) rotate(2deg); }
+  }
+  .float-anim { animation: float 6s ease-in-out infinite; }
+
+  /* Pulse ring */
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(2); opacity: 0; }
+  }
+  .pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    animation: pulse-ring 2s ease-out infinite;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #020617; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #3b82f6, #8b5cf6); border-radius: 4px; }
+
+  /* Section divider */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.4), transparent);
+  }
+
+  /* Mobile menu */
+  .mobile-menu {
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+  .mobile-menu.open { transform: translateX(0); }
+
+  /* Typing cursor */
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  .cursor-blink::after {
+    content: '|';
+    animation: blink 1s infinite;
+    color: var(--accent);
+  }
+
+  /* Progress bar */
+  .progress-fill {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #34d399);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars-bg"></div>
+<div class="nebula nebula-1"></div>
+<div class="nebula nebula-2"></div>
+<div class="nebula nebula-3"></div>
+
+<!-- NAVIGATION -->
+<nav class="nav-blur fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="#home" class="flex items-center gap-3 group">
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-display font-bold text-white shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
+        S
+      </div>
+      <span class="font-display font-bold text-lg tracking-wider">SFS<span class="text-blue-400">.</span>dev</span>
+    </a>
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#about" class="nav-link text-sm font-medium text-slate-300">О игре</a>
+      <a href="#features" class="nav-link text-sm font-medium text-slate-300">Особенности</a>
+      <a href="#parts" class="nav-link text-sm font-medium text-slate-300">Детали</a>
+      <a href="#gallery" class="nav-link text-sm font-medium text-slate-300">Галерея</a>
+      <a href="#faq" class="nav-link text-sm font-medium text-slate-300">FAQ</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="#download" class="hidden sm:inline-flex glow-btn px-5 py-2.5 rounded-lg text-sm font-semibold text-white">
+        Скачать
+      </a>
+      <button id="menuToggle" class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg border border-blue-500/30">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div id="mobileMenu" class="mobile-menu fixed inset-0 z-40 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center gap-8">
+  <button id="menuClose" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-lg border border-blue-500/30">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+  <a href="#about" class="text-2xl font-display font-bold text-slate-200 hover:text-blue-400 transition">О игре</a>
+  <a href="#features" class="text-2xl font-display font-bold text-slate-200 hover:text-blue-400 transition">Особенности</a>
+  <a href="#parts" class="text-2xl font-display font-bold text-slate-200 hover:text-blue-400 transition">Детали</a>
+  <a href="#gallery" class="text-2xl font-display font-bold text-slate-200 hover:text-blue-400 transition">Галерея</a>
+  <a href="#faq" class="text-2xl font-display font-bold text-slate-200 hover:text-blue-400 transition">FAQ</a>
+  <a href="#download" class="glow-btn px-8 py-3 rounded-lg text-lg font-semibold text-white mt-4">Скачать</a>
+</div>
+
+<!-- HERO -->
+<section id="home" class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+  <div class="absolute inset-0 z-0">
+    <img src="https://image.qwenlm.ai/public_source/599a2568-4932-4bfc-a76c-68d3e827b95e/1b8f3ffe8-d644-41fa-9581-53c8d057398e.png" alt="Rocket launch" class="w-full h-full object-cover opacity-40">
+    <div class="hero-gradient absolute inset-0"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 py-20 text-center">
+    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500/30 bg-blue-500/10 backdrop-blur-sm mb-8 reveal">
+      <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+      <span class="text-xs font-mono text-blue-300 tracking-wider">ВЕРСИЯ 1.5.10.6 • ОБНОВЛЕНИЕ ДОСТУПНО</span>
+    </div>
+
+    <h1 class="font-display font-black text-5xl md:text-7xl lg:text-8xl leading-tight mb-6 reveal">
+      SPACEFLIGHT<br>
+      <span class="hero-title">SIMULATOR</span>
+    </h1>
+
+    <p class="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto mb-10 leading-relaxed reveal">
+      Построй ракету своей мечты, осуществи космические миссии и покори Солнечную систему.
+      Реалистичная физика, безграничные возможности и настоящая инженерия в твоих руках.
+    </p>
+
+    <div class="flex flex-wrap items-center justify-center gap-4 mb-16 reveal">
+      <a href="#download" class="glow-btn px-8 py-4 rounded-xl font-semibold text-white flex items-center gap-2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Скачать бесплатно
+      </a>
+      <a href="#about" class="outline-btn px-8 py-4 rounded-xl font-semibold text-slate-200 flex items-center gap-2">
+        Узнать больше
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto reveal">
+      <div class="text-center">
+        <div class="stat-num font-display font-black text-3xl md:text-4xl" data-count="10">0</div>
+        <div class="text-xs text-slate-400 mt-1 font-mono">ПЛАНЕТ</div>
+      </div>
+      <div class="text-center">
+        <div class="stat-num font-display font-black text-3xl md:text-4xl" data-count="200">0</div>
+        <div class="text-xs text-slate-400 mt-1 font-mono">ДЕТАЛЕЙ</div>
+      </div>
+      <div class="text-center">
+        <div class="stat-num font-display font-black text-3xl md:text-4xl" data-count="50">0</div>
+        <div class="text-xs text-slate-400 mt-1 font-mono">МИССИЙ</div>
+      </div>
+      <div class="text-center">
+        <div class="stat-num font-display font-black text-3xl md:text-4xl" data-count="10">0</div>
+        <div class="text-xs text-slate-400 mt-1 font-mono">МЛН ИГРОКОВ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-400">
+    <span class="text-xs font-mono">ПРОКРУТИТЕ ВНИЗ</span>
+    <div class="w-6 h-10 border-2 border-slate-500 rounded-full flex justify-center pt-2">
+      <div class="w-1 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="py-6 border-y border-blue-500/10 bg-slate-950/50 overflow-hidden">
+  <div class="flex whitespace-nowrap ticker">
+    <div class="flex items-center gap-12 px-6 font-display font-bold text-slate-500 text-lg">
+      <span> РАКЕТОСТРОЕНИЕ</span><span>•</span>
+      <span>🌍 ОРБИТАЛЬНЫЕ ПОЛЁТЫ</span><span>•</span>
+      <span> ВЫСАДКА НА ЛУНУ</span><span>•</span>
+      <span>🔴 ПОКОРЕНИЕ МАРСА</span><span>•</span>
+      <span>⚙️ РЕАЛИСТИЧНАЯ ФИЗИКА</span><span>•</span>
+      <span>🛸 КОСМИЧЕСКИЕ МИССИИ</span><span>•</span>
+      <span>🛰️ СПУТНИКИ</span><span>•</span>
+      <span> НАУЧНЫЕ ИССЛЕДОВАНИЯ</span><span>•</span>
+    </div>
+    <div class="flex items-center gap-12 px-6 font-display font-bold text-slate-500 text-lg">
+      <span>🚀 РАКЕТОСТРОЕНИЕ</span><span>•</span>
+      <span>🌍 ОРБИТАЛЬНЫЕ ПОЛЁТЫ</span><span>•</span>
+      <span>🌕 ВЫСАДКА НА ЛУНУ</span><span>•</span>
+      <span>🔴 ПОКОРЕНИЕ МАРСА</span><span>•</span>
+      <span>️ РЕАЛИСТИЧНАЯ ФИЗИКА</span><span>•</span>
+      <span>🛸 КОСМИЧЕСКИЕ МИССИИ</span><span>•</span>
+      <span>🛰️ СПУТНИКИ</span><span>•</span>
+      <span>🔬 НАУЧНЫЕ ИССЛЕДОВАНИЯ</span><span>•</span>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <div class="reveal">
+        <div class="inline-block px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-xs font-mono text-blue-300 mb-4">
+          О ИГРЕ
+        </div>
+        <h2 class="font-display font-bold text-4xl md:text-5xl mb-6 leading-tight">
+          Построй.<br>
+          <span class="text-blue-400">Запусти.</span><br>
+          Исследуй.
+        </h2>
+        <p class="text-slate-300 text-lg leading-relaxed mb-6">
+          <strong class="text-white">Spaceflight Simulator</strong> — это игра-песочница о ракетостроении и космических полётах,
+          созданная студией <span class="text-blue-400">Stefo Mai Morojna</span>. Вы собираете ракеты из множества деталей,
+          запускаете их в космос и исследуете Солнечную систему с реалистичной физикой орбит.
+        </p>
+        <p class="text-slate-400 leading-relaxed mb-8">
+          Игра доступна на Android, iOS и PC. Она предлагает как свободный режим строительства,
+          так и сюжетные миссии, вдохновлённые реальными космическими программами NASA, SpaceX и ESA.
+        </p>
+
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <span class="text-slate-300">Реалистичная орбитальная механика</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <span class="text-slate-300">Масштаб 1:1 с реальной Солнечной системой</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <span class="text-slate-300">Поддержка модов и пользовательских сценариев</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative reveal">
+        <div class="relative rounded-2xl overflow-hidden border border-blue-500/20 shadow-2xl shadow-blue-500/20">
+          <img src="https://image.qwenlm.ai/public_source/599a2568-4932-4bfc-a76c-68d3e827b95e/1b281babc-2341-4a89-b7ca-bd634b0b4be6.png" alt="Rocket blueprint" class="w-full">
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
+          <div class="absolute bottom-6 left-6 right-6">
+            <div class="font-mono text-xs text-blue-300 mb-2">// ТЕХНИЧЕСКАЯ СХЕМА</div>
+            <div class="font-display font-bold text-xl">Конструктор ракет</div>
+          </div>
+        </div>
+        <div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-blue-500/20 blur-2xl"></div>
+        <div class="absolute -bottom-4 -left-4 w-32 h-32 rounded-full bg-purple-500/20 blur-2xl"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider max-w-7xl mx-auto"></div>
+
+<!-- FEATURES -->
+<section id="features" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16 reveal">
+      <div class="inline-block px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-xs font-mono text-purple-300 mb-4">
+        ВОЗМОЖНОСТИ
+      </div>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mb-4">
+        Почему <span class="text-purple-400">SFS</span> — это круто
+      </h2>
+      <p class="text-slate-400 max-w-2xl mx-auto">
+        Шесть ключевых особенностей, которые делают Spaceflight Simulator уникальным среди космических симуляторов
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Feature 1 -->
+      <div class="feature-card rounded-2xl p-8 reveal">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center mb-6 shadow-lg shadow-blue-500/30">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-3">Конструктор ракет</h3>
+        <p class="text-slate-400 leading-relaxed">
+          Более 200 деталей: двигатели, топливные баки, обтекатели, парашюты, научные приборы.
+          Соединяйте их как угодно и создавайте уникальные конструкции.
+        </p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="feature-card rounded-2xl p-8 reveal">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center mb-6 shadow-lg shadow-purple-500/30">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M2 12h20"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-3">Реалистичная физика</h3>
+        <p class="text-slate-400 leading-relaxed">
+          Орбитальная механика Кеплера, гравитация, аэродинамика, эффект Оберта.
+          Всё работает по законам реальной физики.
+        </p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="feature-card rounded-2xl p-8 reveal">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/30">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-3">Солнечная система</h3>
+        <p class="text-slate-400 leading-relaxed">
+          Исследуйте Меркурий, Венеру, Землю, Марс, Юпитер и их спутники.
+          Каждая планета имеет реалистичные параметры.
+        </p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="feature-card rounded-2xl p-8 reveal">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-6 shadow-lg shadow-orange-500/30">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-3">Сюжетные миссии</h3>
+        <p class="text-slate-400 leading-relaxed">
+          Повторите достижения Гагарина, Армстронга и современных космонавтов.
+          Более 50 миссий с пошаговыми инструкциями.
+        </p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="feature-card rounded-2xl p-8 reveal">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-6 shadow-lg shadow-cyan-500/30">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <path d="M9 9h6v6H9z"/>
+            <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-3">Модификации</h3>
+        <p class="text-slate-400 leading-relaxed">
+          Активное сообщество моддеров создаёт новые детали, планеты,
+          корабли и целые игровые режимы.
+        </p>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="feature-card rounded-2xl p-8 reveal">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-6 shadow-lg shadow-pink-500/30">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mb-3">Мультиплеер</h3>
+        <p class="text-slate-400 leading-relaxed">
+          Запускайте ракеты вместе с друзьями, создавайте совместные миссии
+          и соревнуйтесь в достижениях.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTS -->
+<section id="parts" class="py-24 relative bg-gradient-to-b from-transparent via-blue-950/10 to-transparent">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16 reveal">
+      <div class="inline-block px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300 mb-4">
+        КОМПОНЕНТЫ
+      </div>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mb-4">
+        Детали для <span class="text-cyan-400">сборки</span>
+      </h2>
+      <p class="text-slate-400 max-w-2xl mx-auto">
+        Основные категории компонентов, из которых строится ваша ракета
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="part-card rounded-2xl p-6 reveal">
+        <div class="text-4xl mb-4">🚀</div>
+        <h3 class="font-display font-bold text-lg mb-2">Двигатели</h3>
+        <p class="text-sm text-slate-400 mb-4">Твердотопливные, жидкостные, ионные и ядерные двигатели с разной тягой.</p>
+        <div class="font-mono text-xs text-cyan-300">42 типа</div>
+        <div class="mt-3 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-fill h-full" style="width: 85%"></div>
+        </div>
+      </div>
+
+      <div class="part-card rounded-2xl p-6 reveal">
+        <div class="text-4xl mb-4">⛽</div>
+        <h3 class="font-display font-bold text-lg mb-2">Топливные баки</h3>
+        <p class="text-sm text-slate-400 mb-4">Различные объёмы для керосина, жидкого водорода и метана.</p>
+        <div class="font-mono text-xs text-cyan-300">28 типов</div>
+        <div class="mt-3 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-fill h-full" style="width: 70%"></div>
+        </div>
+      </div>
+
+      <div class="part-card rounded-2xl p-6 reveal">
+        <div class="text-4xl mb-4">🛸</div>
+        <h3 class="font-display font-bold text-lg mb-2">Обтекатели</h3>
+        <p class="text-sm text-slate-400 mb-4">Защита полезной нагрузки от аэродинамических нагрузок при старте.</p>
+        <div class="font-mono text-xs text-cyan-300">15 типов</div>
+        <div class="mt-3 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-fill h-full" style="width: 55%"></div>
+        </div>
+      </div>
+
+      <div class="part-card rounded-2xl p-6 reveal">
+        <div class="text-4xl mb-4">📡</div>
+        <h3 class="font-display font-bold text-lg mb-2">Приборы</h3>
+        <p class="text-sm text-slate-400 mb-4">Научное оборудование, антенны, солнечные панели и системы навигации.</p>
+        <div class="font-mono text-xs text-cyan-300">35 типов</div>
+        <div class="mt-3 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-fill h-full" style="width: 75%"></div>
+        </div>
+      </div>
+
+      <div class="part-card rounded-2xl p-6 reveal">
+        <div class="text-4xl mb-4">🪂</div>
+        <h3 class="font-display font-bold text-lg mb-2">Парашюты</h3>
+        <p class="text-sm text-slate-400 mb-4">Для безопасного возвращения ступеней и капсул на Землю.</p>
+        <div class="font-mono text-xs text-cyan-300">8 типов</div>
+        <div class="mt-3 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-fill h-full" style="width: 40%"></div>
+        </div>
+      </div>
+
+      <div class="part-card rounded-2xl p-6 reveal">
+        <div class="text-4xl mb-4">️</div>
+        <h3 class="font-display font-bold text-lg mb-2">Разделители</h3>
+        <p class="text-sm text-slate-400 mb-4">Механизмы отделения ступеней, обтекателей и боковых ускорителей.</p>
+        <div class="font-mono text-xs text-cyan-300">12 типов</div>
+        <div class="mt-3 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-fill h-full" style="width: 50%"></div>
+        </div>
+      </div>
+
+      <div class="part-card rounded-2xl p-6 reveal">
+        <div class="text-4xl mb-4">️</div>
+        <h3 class="font-display font-bold text-lg mb-2">Тепловые щиты</h3>
+        <p class="text-sm text-slate-400 mb-4">Защита от высоких температур при входе в атмосферу.</p>
+        <div class="font-mono text-xs text-cyan-300">6 типов</div>
+        <div class="mt-3 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-fill h-full" style="width: 35%"></div>
+        </div>
+      </div>
+
+      <div class="part-card rounded-2xl p-6 reveal">
+        <div class="text-4xl mb-4">👨‍🚀</div>
+        <h3 class="font-display font-bold text-lg mb-2">Капсулы</h3>
+        <p class="text-sm text-slate-400 mb-4">Пилотируемые модули для астронавтов с системами жизнеобеспечения.</p>
+        <div class="font-mono text-xs text-cyan-300">10 типов</div>
+        <div class="mt-3 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-fill h-full" style="width: 45%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16 reveal">
+      <div class="inline-block px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-xs font-mono text-pink-300 mb-4">
+        ГАЛЕРЕЯ
+      </div>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mb-4">
+        Космос <span class="text-pink-400">в деталях</span>
+      </h2>
+      <p class="text-slate-400 max-w-2xl mx-auto">
+        Моменты из игры, которые захватывают дух
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="relative group rounded-2xl overflow-hidden reveal">
+        <img src="https://image.qwenlm.ai/public_source/599a2568-4932-4bfc-a76c-68d3e827b95e/1b8f3ffe8-d644-41fa-9581-53c8d057398e.png" alt="Launch" class="gallery-img w-full h-80 object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+        <div class="absolute bottom-6 left-6">
+          <div class="font-mono text-xs text-blue-300 mb-1">01 / СТАРТ</div>
+          <div class="font-display font-bold text-xl">Запуск ракеты-носителя</div>
+        </div>
+      </div>
+
+      <div class="relative group rounded-2xl overflow-hidden reveal">
+        <img src="https://image.qwenlm.ai/public_source/599a2568-4932-4bfc-a76c-68d3e827b95e/1f88ef456-4972-4085-9424-8f19dbe2e04c.png" alt="Orbit" class="gallery-img w-full h-80 object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+        <div class="absolute bottom-6 left-6">
+          <div class="font-mono text-xs text-purple-300 mb-1">02 / ОРБИТА</div>
+          <div class="font-display font-bold text-xl">Исследование планет</div>
+        </div>
+      </div>
+
+      <div class="relative group rounded-2xl overflow-hidden reveal">
+        <img src="https://image.qwenlm.ai/public_source/599a2568-4932-4bfc-a76c-68d3e827b95e/1b281babc-2341-4a89-b7ca-bd634b0b4be6.png" alt="Blueprint" class="gallery-img w-full h-80 object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+        <div class="absolute bottom-6 left-6">
+          <div class="font-mono text-xs text-cyan-300 mb-1">03 / ПРОЕКТИРОВАНИЕ</div>
+          <div class="font-display font-bold text-xl">Инженерные схемы</div>
+        </div>
+      </div>
+
+      <div class="relative group rounded-2xl overflow-hidden reveal">
+        <img src="https://image.qwenlm.ai/public_source/599a2568-4932-4bfc-a76c-68d3e827b95e/1dc466480-28a7-464a-b815-6a360d63438b.png" alt="Stage separation" class="gallery-img w-full h-80 object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+        <div class="absolute bottom-6 left-6">
+          <div class="font-mono text-xs text-orange-300 mb-1">04 / ОТДЕЛЕНИЕ</div>
+          <div class="font-display font-bold text-xl">Разделение ступеней</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SYSTEM REQUIREMENTS -->
+<section id="download" class="py-24 relative bg-gradient-to-b from-transparent via-purple-950/10 to-transparent">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-2 gap-12 items-start">
+      <div class="reveal">
+        <div class="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-300 mb-4">
+          СИСТЕМНЫЕ ТРЕБОВАНИЯ
+        </div>
+        <h2 class="font-display font-bold text-4xl md:text-5xl mb-6 leading-tight">
+          Готов к <span class="text-emerald-400">полёту</span>?
+        </h2>
+        <p class="text-slate-300 text-lg mb-8">
+          Spaceflight Simulator доступен на всех основных платформах.
+          Проверьте, соответствует ли ваше устройство требованиям.
+        </p>
+
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-900/50 border border-slate-800">
+            <div class="flex items-center gap-3">
+              <div class="text-2xl">📱</div>
+              <div>
+                <div class="font-semibold">Android</div>
+                <div class="text-xs text-slate-400">Android 6.0+</div>
+              </div>
+            </div>
+            <a href="#" class="text-blue-400 text-sm hover:text-blue-300 transition">Скачать →</a>
+          </div>
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-900/50 border border-slate-800">
+            <div class="flex items-center gap-3">
+              <div class="text-2xl">🍎</div>
+              <div>
+                <div class="font-semibold">iOS</div>
+                <div class="text-xs text-slate-400">iOS 11.0+</div>
+              </div>
+            </div>
+            <a href="#" class="text-blue-400 text-sm hover:text-blue-300 transition">Скачать →</a>
+          </div>
+          <div class="flex items-center justify-between p-4 rounded-xl bg-slate-900/50 border border-slate-800">
+            <div class="flex items-center gap-3">
+              <div class="text-2xl">💻</div>
+              <div>
+                <div class="font-semibold">PC (Steam)</div>
+                <div class="text-xs text-slate-400">Windows 10+</div>
+              </div>
+            </div>
+            <a href="#" class="text-blue-400 text-sm hover:text-blue-300 transition">Купить →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-800 flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <span class="ml-4 font-mono text-xs text-slate-400">system_requirements.txt</span>
+          </div>
+          <div class="p-6 font-mono text-sm space-y-6">
+            <div>
+              <div class="text-purple-400 mb-2"># МИНИМАЛЬНЫЕ</div>
+              <div class="space-y-1 text-slate-300">
+                <div><span class="text-cyan-400">OS:</span> Windows 10 / Android 6.0 / iOS 11</div>
+                <div><span class="text-cyan-400">CPU:</span> 2 ядра, 1.5 GHz</div>
+                <div><span class="text-cyan-400">RAM:</span> 2 GB</div>
+                <div><span class="text-cyan-400">GPU:</span> OpenGL ES 3.0</div>
+                <div><span class="text-cyan-400">Storage:</span> 500 MB</div>
+              </div>
+            </div>
+            <div class="section-divider"></div>
+            <div>
+              <div class="text-purple-400 mb-2"># РЕКОМЕНДУЕМЫЕ</div>
+              <div class="space-y-1 text-slate-300">
+                <div><span class="text-cyan-400">OS:</span> Windows 11 / Android 10+ / iOS 14+</div>
+                <div><span class="text-cyan-400">CPU:</span> 4 ядра, 2.0+ GHz</div>
+                <div><span class="text-cyan-400">RAM:</span> 4 GB</div>
+                <div><span class="text-cyan-400">GPU:</span> Vulkan / Metal</div>
+                <div><span class="text-cyan-400">Storage:</span> 1 GB SSD</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="py-24 relative">
+  <div class="max-w-4xl mx-auto px-6">
+    <div class="text-center mb-16 reveal">
+      <div class="inline-block px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-xs font-mono text-orange-300 mb-4">
+        FAQ
+      </div>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mb-4">
+        Частые <span class="text-orange-400">вопросы</span>
+      </h2>
+      <p class="text-slate-400 max-w-2xl mx-auto">
+        Ответы на популярные вопросы о Spaceflight Simulator
+      </p>
+    </div>
+
+    <div class="space-y-3">
+      <div class="faq-item rounded-xl overflow-hidden reveal">
+        <button class="faq-toggle w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-lg">Игра бесплатная?</span>
+          <svg class="faq-icon w-5 h-5 text-blue-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="faq-content">
+          <div class="px-6 pb-5 text-slate-400">
+            Базовая версия игры бесплатна на Android и iOS и включает все основные функции.
+            Платное DLC «Spaceflight Simulator: Full Version» открывает дополнительные планеты,
+            детали и режимы. На Steam игра продаётся за небольшую сумму.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item rounded-xl overflow-hidden reveal">
+        <button class="faq-toggle w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-lg">Нужны ли знания физики для игры?</span>
+          <svg class="faq-icon w-5 h-5 text-blue-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="faq-content">
+          <div class="px-6 pb-5 text-slate-400">
+            Нет! Игра подходит как новичкам, так и опытным игрокам.
+            Есть подробные обучающие миссии, которые постепенно вводят в курс дела.
+            Но если вы знаете основы орбитальной механики — вам откроются дополнительные возможности.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item rounded-xl overflow-hidden reveal">
+        <button class="faq-toggle w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-lg">Можно ли играть офлайн?</span>
+          <svg class="faq-icon w-5 h-5 text-blue-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="faq-content">
+          <div class="px-6 pb-5 text-slate-400">
+            Да, Spaceflight Simulator полностью работает офлайн.
+            Интернет нужен только для загрузки обновлений и синхронизации сохранений в облаке.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item rounded-xl overflow-hidden reveal">
+        <button class="faq-toggle w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-lg">Есть ли мультиплеер?</span>
+          <svg class="faq-icon w-5 h-5 text-blue-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="faq-content">
+          <div class="px-6 pb-5 text-slate-400">
+            В текущей версии мультиплеер ограничен обменом чертежами ракет через облако.
+            Разработчики анонсировали полноценный кооперативный режим в будущих обновлениях.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item rounded-xl overflow-hidden reveal">
+        <button class="faq-toggle w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-lg">Как установить моды?</span>
+          <svg class="faq-icon w-5 h-5 text-blue-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="faq-content">
+          <div class="px-6 pb-5 text-slate-400">
+            Моды устанавливаются через папку «Mods» в директории игры.
+            Поддерживаются форматы .zip и .sfsmod. Популярные моды можно найти на Reddit и Discord-сообществе игры.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-24 relative">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="relative rounded-3xl overflow-hidden border border-blue-500/20 reveal">
+      <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-cyan-600/20"></div>
+      <div class="absolute inset-0 backdrop-blur-sm"></div>
+      <div class="relative p-12 md:p-16 text-center">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-6 shadow-2xl shadow-blue-500/50 float-anim">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+            <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+          </svg>
+        </div>
+        <h2 class="font-display font-bold text-3xl md:text-5xl mb-4">
+          Готов покорить <span class="text-blue-400">космос</span>?
+        </h2>
+        <p class="text-slate-300 text-lg mb-8 max-w-2xl mx-auto">
+          Присоединяйтесь к миллионам игроков по всему миру.
+          Ваша первая ракета ждёт сборки.
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-4">
+          <a href="#" class="glow-btn px-8 py-4 rounded-xl font-semibold text-white flex items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Начать играть
+          </a>
+          <a href="#" class="outline-btn px-8 py-4 rounded-xl font-semibold text-slate-200 flex items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            </svg>
+            Discord сообщество
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-blue-500/10 bg-slate-950/80 backdrop-blur-xl">
+  <div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="grid md:grid-cols-4 gap-8 mb-8">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-display font-bold text-white">
+            S
+          </div>
+          <span class="font-display font-bold text-lg">SFS.dev</span>
+        </div>
+        <p class="text-sm text-slate-400 leading-relaxed">
+          Неофициальный фан-сайт, посвящённый игре Spaceflight Simulator.
+          Создан с любовью к космосу.
+        </p>
+      </div>
+      <div>
+        <h4 class="font-display font-bold mb-4 text-sm tracking-wider">НАВИГАЦИЯ</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="#about" class="hover:text-blue-400 transition">О игре</a></li>
+          <li><a href="#features" class="hover:text-blue-400 transition">Особенности</a></li>
+          <li><a href="#parts" class="hover:text-blue-400 transition">Детали</a></li>
+          <li><a href="#gallery" class="hover:text-blue-400 transition">Галерея</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold mb-4 text-sm tracking-wider">РЕСУРСЫ</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="#" class="hover:text-blue-400 transition">Вики</a></li>
+          <li><a href="#" class="hover:text-blue-400 transition">Моды</a></li>
+          <li><a href="#" class="hover:text-blue-400 transition">Форум</a></li>
+          <li><a href="#" class="hover:text-blue-400 transition">Баг-репорт</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold mb-4 text-sm tracking-wider">СОЦСЕТИ</h4>
+        <div class="flex gap-3">
+          <a href="#" class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-blue-500 hover:text-blue-400 transition">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-blue-500 hover:text-blue-400 transition">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+          </a>
+          <a href="#" class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-blue-500 hover:text-blue-400 transition">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          </a>
+          <a href="#" class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-blue-500 hover:text-blue-400 transition">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider mb-6"></div>
+
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+      <div>© 2026 SFS.dev • Неофициальный фан-сайт • Все права принадлежат Stefo Mai Morojna</div>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-blue-400 transition">Политика</a>
+        <a href="#" class="hover:text-blue-400 transition">Условия</a>
+        <a href="#" class="hover:text-blue-400 transition">Контакты</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile menu
+  const menuToggle = document.getElementById('menuToggle');
+  const menuClose = document.getElementById('menuClose');
+  const mobileMenu = document.getElementById('mobileMenu');
+
+  menuToggle.addEventListener('click', () => mobileMenu.classList.add('open'));
+  menuClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
+  mobileMenu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => mobileMenu.classList.remove('open'));
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Counter animation
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseInt(el.dataset.count);
+        let current = 0;
+        const step = target / 40;
+        const timer = setInterval(() => {
+          current += step;
+          if (current >= target) {
+            current = target;
+            clearInterval(timer);
+          }
+          el.textContent = Math.floor(current) + (target === 10 && el.parentElement.querySelector('.text-xs').textContent.includes('МЛН') ? 'М+' : '+');
+        }, 30);
+        counterObserver.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+  // FAQ
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const content = item.querySelector('.faq-content');
+      const icon = btn.querySelector('.faq-icon');
+      const isOpen = item.classList.contains('open');
+
+      // Close all
+      document.querySelectorAll('.faq-item').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-content').style.maxHeight = '0';
+        i.querySelector('.faq-icon').style.transform = 'rotate(0deg)';
+      });
+
+      if (!isOpen) {
+        item.classList.add('open');
+        content.style.maxHeight = content.scrollHeight + 'px';
+        icon.style.transform = 'rotate(180deg)';
+      }
+    });
+  });
+
+  // Nav background on scroll
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      nav.style.background = 'rgba(3, 7, 18, 0.9)';
+    } else {
+      nav.style.background = 'rgba(3, 7, 18, 0.7)';
+    }
+  });
+</script>
+
+</body>
+</html>

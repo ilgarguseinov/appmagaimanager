@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
@@ -9,7 +10,12 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/youtube", youtubeRouter);
+
+app.get("/spaceflight-simulator", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "spaceflight-simulator.html"));
+});
 
 const PORT = process.env.PORT || 3000;
 
@@ -164,6 +170,16 @@ app.get("/", (req, res) => {
         </p>
         <a class="button" href="/youtube">
           Agentləri aç
+        </a>
+      </div>
+
+      <div class="card">
+        <h2>Spaceflight Simulator Fansite</h2>
+        <p>
+          Spaceflight Simulator oyunu üçün fan-sayt nümunəsi.
+        </p>
+        <a class="button" href="/spaceflight-simulator">
+          Sayta bax
         </a>
       </div>
 
