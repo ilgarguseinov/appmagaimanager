@@ -4,12 +4,14 @@ const cors = require("cors");
 require("dotenv").config();
 
 const youtubeRouter = require("./youtube/router");
+const wildberriesRouter = require("./wildberries/router");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use("/youtube", youtubeRouter);
+app.use("/wildberries", wildberriesRouter);
 
 const PORT = process.env.PORT || 3000;
 
@@ -164,6 +166,16 @@ app.get("/", (req, res) => {
         </p>
         <a class="button" href="/youtube">
           Agentləri aç
+        </a>
+      </div>
+
+      <div class="card">
+        <h2>Wildberries</h2>
+        <p>
+          Wildberries mağazasındakı məhsulları görüntülə və AI ilə analiz et.
+        </p>
+        <a class="button" href="/wildberries">
+          Wildberries-i aç
         </a>
       </div>
 
