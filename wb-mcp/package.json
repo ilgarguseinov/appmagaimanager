@@ -1,0 +1,17 @@
+{
+  "name": "wb-mcp",
+  "version": "1.0.0",
+  "description": "MCP server exposing Wildberries Seller API (content, prices, orders/stocks, statistics, advertising) as tools for AI agents",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "wb-mcp": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.0",
+    "zod": "^3.24.1"
+  }
+}
