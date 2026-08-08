@@ -1,6 +1,12 @@
 #!/usr/bin/env node
+import { fileURLToPath } from "url";
+import path from "path";
+import { config } from "dotenv";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+config({ path: path.join(__dirname, ".env") });
 
 import { createWbClient } from "./src/wbClient.js";
 import { registerContentTools } from "./src/tools/content.js";
